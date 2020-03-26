@@ -4,7 +4,7 @@ from drawMap import *
 elev = dat_to_numpy_elev('data/Colorado_480x480.dat')
 gray = elev_to_grayscale(elev)
 
-a_star = AStarSearch(elev, elev_lambda=0.5, heuristic_lambda=.75)
+a_star = AStarSearch(elev, pixel_size=100, heuristic_lambda=1)
 path, searched_nodes = a_star.search(210, 310) #210, 350
 for coord in searched_nodes:
     gray[coord][2] = 200
