@@ -1,3 +1,5 @@
+__author__ = 'cpolzak'
+
 class MinPriorityQueue(object):
     def __init__(self, inp=[]):
         self.q = inp
@@ -49,7 +51,7 @@ def min_heapify(arr, i):
             small = l
         if r < (len(arr)-1) and arr[r] < arr[small]:
             small = r
-            
+
         if small != i:
             arr[i], arr[small] = arr[small], arr[i]
             i = small

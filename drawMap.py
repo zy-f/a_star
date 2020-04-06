@@ -1,3 +1,5 @@
+__author__ = 'cpolzak'
+
 import pygame
 from pygame import *
 #from random import randint
