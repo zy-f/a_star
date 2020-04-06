@@ -1,3 +1,5 @@
+__author__ = 'cpolzak'
+
 import numpy as np
 from heapQueue import MinPriorityQueue
 

@@ -1,3 +1,5 @@
+__author__ = 'cpolzak'
+
 from search import *
 from drawMap import *
 

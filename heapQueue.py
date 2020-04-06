@@ -1,3 +1,5 @@
+__author__ = 'cpolzak'
+
 class MinPriorityQueue(object):
     def __init__(self, inp=[]):
         self.q = inp
