@@ -2,6 +2,7 @@ __author__ = 'cpolzak'
 
 import numpy as np
 from heapQueue import MinPriorityQueue
+from linkedList import LinkedList
 
 class Node(object):
     def __init__(self, pos, parent):
@@ -25,6 +26,13 @@ class Node(object):
         return not self.__lt__(other)
     def __ne__(self, other):
         return not self.__eq__(other)
+
+class FringeNode(Node):
+    def __init__(self, *args):
+        super(FringeNode, self).__init__(*args)
+    
+    def __eq__(self, other):
+        return isinstance(other, Node) and tuple(self.pos) == tuple(other.pos)
 
 class AStarSearch(object):
     # higher elev_lambda => more weight on elevation change
@@ -92,3 +100,75 @@ class AStarSearch(object):
 
     if __name__ == '__main__':
         search(0,None)
+
+
+class FringeSearch(AStarSearch):
+    def __init__(self, elev_map, **kwargs):
+        super(FringeSearch,self).__init__(elev_map, **kwargs)
+        self.fringe = LinkedList(double_link=True)
+        self.node_cache = {}
+    
+    def get_neighbor_positions(self, pos):
+        neighbor_pos = pos + self.dir_grid
+        # excludes positions that don't exist on the grid
+        grid_dims = self.elev_grid.shape
+        in_grid_mask = (neighbor_pos[:,0] < grid_dims[0]) & (neighbor_pos[:,1] < grid_dims[1]) & (neighbor_pos>=0).all(axis=-1)
+        return neighbor_pos[in_grid_mask]
+    
+    def movement_cost(self, pos1, pos2):
+        dist_cost = np.sum((pos2 - pos1)**2)
+        height_delta = self.elev_grid[tuple(pos2)] - self.elev_grid[tuple(pos1)]
+        height_cost = (height_delta**2)/self.pixel_size
+        return dist_cost + height_cost
+    
+    def search(self, start_y, end_y):
+        self.start = np.array((0,start_y))
+        self.end = np.array((self.elev_grid.shape[0]-1, end_y))
+        
+        root = FringeNode(self.start, None) # pos, parent
+        self.fringe.append(root)
+        self.node_cache[tuple(self.start)] = root
+        now_len = 1
+        
+        f_limit = self.movement_cost(root.pos, self.end)
+        goal_node = None
+        while goal_node is None:
+            f_min = float('inf')
+            k = 0
+            link_el = self.fringe.start
+            print(len(self.node_cache.keys()))
+            while k < now_len:
+                node = link_el.v
+                f = node.g + self.movement_cost(node.pos, self.end)
+                if f > f_limit:
+                    f_min = min(f, f_min)
+                    k += 1
+                    continue
+                if tuple(node.pos) == tuple(self.end):
+                    goal_node = node
+                    break
+                for child_pos in self.get_neighbor_positions(node.pos):
+                    child_node = FringeNode(child_pos, node)
+                    child_node.g += self.movement_cost(node.pos, child_pos)
+                    if self.node_cache.get(tuple(child_pos)) is not None and child_node.g >= self.node_cache[tuple(child_pos)].g:
+                        continue
+                    self.fringe.remove(child_node)
+                    self.fringe.insert(k+1, child_node)
+                    now_len += 1
+                    self.node_cache[tuple(child_node.pos)] = child_node
+                self.fringe.remove(node)
+                k += 1
+                link_el = link_el.r
+            f_limit = f_min
+        
+        path = []
+        current = goal_node
+        while current is not None:
+            path.append(tuple(current.pos[::-1])) # convert (x,y) to (y,x) for rendering
+            current = current.parent
+
+        return path, [pos[::-1] for pos in node_cache.keys()]
+        
+
+                    
+                    
